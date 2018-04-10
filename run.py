@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 import argparse
 import sys
+from os import environ, path
 
 from zulipterminal.core import Controller
 
@@ -42,6 +43,34 @@ def parse_args():
 
     args = parser.parse_args()
     return args
+
+
+def get_config_files():
+    zulip_extension = '/zulip/zulip.ini'
+    zterm_extension = '/zulip/zterm.ini'
+    dirs = environ.get('XDG_CONFIG_DIRS')
+    if dirs is None:
+        dirs = '~/.config'
+        config_dir = path.expanduser(dirs)
+        if not path.exists(config_dir):
+            sys.exit("Error: Cannot find config directory: {}".format(config_dir))
+
+    dirs_split = dirs.split(':')
+    config_dir = None
+    for d in dirs_split:
+        zulip_path = path.expanduser(d + zulip_extension)
+        if path.exists(zulip_path):
+            config_dir = path.expanduser(d)
+            break
+
+    if config_dir is None:
+        dirs_str = dirs_split[0] + '/zulip/'
+        for i in range(1, len(dirs_split)):
+            dirs_str += ' or ' + dirs_split[i] + '/zulip/'
+
+        sys.exit("Error: cannot find zulip.ini in {}".format(dirs_str))
+
+    return config_dir + zulip_extension, config_dir + zterm_extension
 
 
 def main():
