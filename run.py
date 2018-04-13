@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 import argparse
+import configparser
 import sys
 from os import environ, path
 
@@ -53,7 +54,7 @@ def get_config_files():
         dirs = '~/.config'
         config_dir = path.expanduser(dirs)
         if not path.exists(config_dir):
-            sys.exit("Error: Cannot find config directory: {}".format(config_dir))
+            sys.exit("Error: Cannot find config directory: ", config_dir)
 
     dirs_split = dirs.split(':')
     config_dir = None
@@ -73,10 +74,26 @@ def get_config_files():
     return config_dir + zulip_extension, config_dir + zterm_extension
 
 
+def parse_zterm(zterm_ini):
+    zterm = configparser.ConfigParser()
+    zterm.read(zterm_ini)
+
+    # default settings
+    settings = {'theme': 'default'}
+
+    if 'graphics' in zterm:
+        if 'theme' in zterm['graphics']:
+            settings['theme'] = zterm['graphics']['theme']
+
+    return settings
+
+
 def main():
     """
     Launch Zulip Terminal.
     """
+    zulip_ini, zterm_ini = get_config_files()
+    zterm = parse_zterm(zterm_ini)
     args = parse_args()
     if args.debug:
         save_stdout()
@@ -86,7 +103,7 @@ def main():
         prof.enable()
 
     try:
-        Controller(args.config_file, args.theme).main()
+        Controller(zulip_ini, zterm['theme']).main()
     except Exception:
         # A unexpected exception occurred, open the debugger in debug mode
         if args.debug:
