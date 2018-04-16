@@ -46,44 +46,20 @@ def parse_args():
     return args
 
 
-def get_config_files():
-    zulip_extension = '/zulip/zulip.ini'
-    zterm_extension = '/zulip/zterm.ini'
-    dirs = environ.get('XDG_CONFIG_DIRS')
-    if dirs is None:
-        dirs = '~/.config'
-        config_dir = path.expanduser(dirs)
-        if not path.exists(config_dir):
-            sys.exit("Error: Cannot find config directory: ", config_dir)
+def parse_zuliprc(zuliprc_str):
+    zuliprc_path = path.expanduser(zuliprc_str)
+    if not path.exists(zuliprc_path):
+        sys.exit("Error: Cannot find {}".format(zuliprc_path))
 
-    dirs_split = dirs.split(':')
-    config_dir = None
-    for d in dirs_split:
-        zulip_path = path.expanduser(d + zulip_extension)
-        if path.exists(zulip_path):
-            config_dir = path.expanduser(d)
-            break
-
-    if config_dir is None:
-        dirs_str = dirs_split[0] + '/zulip/'
-        for i in range(1, len(dirs_split)):
-            dirs_str += ' or ' + dirs_split[i] + '/zulip/'
-
-        sys.exit("Error: cannot find zulip.ini in {}".format(dirs_str))
-
-    return config_dir + zulip_extension, config_dir + zterm_extension
-
-
-def parse_zterm(zterm_ini):
-    zterm = configparser.ConfigParser()
-    zterm.read(zterm_ini)
+    zuliprc = configparser.ConfigParser()
+    zuliprc.read(zuliprc_path)
 
     # default settings
     settings = {'theme': 'default'}
 
-    if 'graphics' in zterm:
-        if 'theme' in zterm['graphics']:
-            settings['theme'] = zterm['graphics']['theme']
+    if 'zterm' in zuliprc:
+        if 'theme' in zuliprc['zterm']:
+            settings['theme'] = zuliprc['zterm']['theme']
 
     return settings
 
@@ -92,8 +68,8 @@ def main():
     """
     Launch Zulip Terminal.
     """
-    zulip_ini, zterm_ini = get_config_files()
-    zterm = parse_zterm(zterm_ini)
+    zuliprc_path = '~/.zuliprc'
+    zterm = parse_zuliprc(zuliprc_path)
     args = parse_args()
     if args.debug:
         save_stdout()
@@ -103,7 +79,7 @@ def main():
         prof.enable()
 
     try:
-        Controller(zulip_ini, zterm['theme']).main()
+        Controller(zuliprc_path, zterm['theme']).main()
     except Exception:
         # A unexpected exception occurred, open the debugger in debug mode
         if args.debug:
