@@ -68,9 +68,14 @@ def main():
     """
     Launch Zulip Terminal.
     """
-    zuliprc_path = '~/.zuliprc'
-    zterm = parse_zuliprc(zuliprc_path)
     args = parse_args()
+    if args.config_file:
+        zuliprc_path = args.config_file
+    else:
+        zuliprc_path = '~/zuliprc'
+
+    zterm = parse_zuliprc(zuliprc_path)
+
     if args.debug:
         save_stdout()
     if args.profile:

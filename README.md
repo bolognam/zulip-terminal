@@ -25,15 +25,18 @@ An interactive terminal interface for [Zulip](https://zulipchat.com).
   - Go to _Settings_ -> _Your account_
   - Click on `Show/Change your API key` under the _API key_ section.
   - Download the `zuliprc` file by clicking _Get API key_.
-  - Copy the file to '~/.zuliprc`
-
+  - Copy the file to `~/zuliprc`
 
   4. Run `Zulip-Terminal`
   ```
   pipenv shell
   ./run.py
   ```
-## Example ~/.zuliprc file
+  Alternatively, you can specify the location of `zuliprc` using the -c option
+  ```
+  ./run.py -c /etc/xdg/zuliprc
+  ```
+## Example zuliprc file
 ```
 [api]
 email=example@example.com
